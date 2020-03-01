@@ -61,7 +61,8 @@ class ProcessaConsolidacao {
                                                 console.log('qtdArrRegistros: ', qtdArrRegistros);
 
                                                 var sistema = 'erp-time10.zeroglosa.com.br';
-                                                var sourceGuia = 'teste-xml-excel';
+                                                var sourceGuia = 'sql-integromat';
+
                                                 for(let i=0; i<qtdArrRegistros; i++){
                                                     console.log( i + '->', arrRegistros[i].id );
 
