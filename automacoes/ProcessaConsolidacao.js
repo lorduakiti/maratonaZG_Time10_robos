@@ -64,7 +64,8 @@ class ProcessaConsolidacao {
                                                 var sourceGuia = 'sql-integromat';
 
                                                 for(let i=0; i<qtdArrRegistros; i++){
-                                                    console.log( i + '->', arrRegistros[i].id );
+                                                    let id = arrRegistros[i].id;
+                                                    console.log( i + '->', id );
 
                                                     var numeroGuia = arrRegistros[i]['numero_guia']
                                                     var ngPrest = arrRegistros[i]['ng_prest']
@@ -77,12 +78,12 @@ class ProcessaConsolidacao {
                                                         .then(result => {
                                                             //console.log('res:', result);
                                                             //console.log('data:', result.data);
-                                                            console.log( i + '->', 'statusCode[3]:', result.status);
+                                                            console.log( i + '->' + id, 'statusCode[3]:', result.status);
                                                             if(result.status != 200){
                                                                 throw  result.statusText;
                                                             } else {
                                                                 responseNumeroGuia = result.data['data']['importacao_guias'];
-                                                                console.log( i + '-> responseNumeroGuia', responseNumeroGuia.length)
+                                                                console.log( i + '->' + id, ' responseNumeroGuia', responseNumeroGuia.length)
                                                                 if(responseNumeroGuia.length == 0){
                                                                     // Busca registro equivalente na importação de guias por número do prestador.
                                                                     var data = {"query":"query MyQuery {\n  importacao_guias(where: {deleted_at: {_is_null: true}, sistema: {_eq: \"" + sistema + "\"}, source: {_eq: \"" + sourceGuia + "\"}, numeroGuia: {_eq: \"" + ngPrest + "\"}}) {\n    ans\n    cnpj\n    codigo\n    dataAtendimento\n    id\n    id_convenios\n    id_prestadores_servico\n    matricula\n    nome\n    nomeBeneficiario\n    nomeOperadora\n    nomePrestador\n    numeroGuia\n    numeroItem\n    quantidade\n    sistema\n    source\n    updated_at\n    valorTotal\n    valorTotalGuia\n    valorUnitario\n  }\n}\n","variables":null,"operationName":"MyQuery"}
@@ -90,14 +91,49 @@ class ProcessaConsolidacao {
                                                                         .then(result => {
                                                                             //console.log('res:', result);
                                                                             //console.log('data:', result.data);
-                                                                            console.log( i + '->', 'statusCode[4]:', result.status);
+                                                                            console.log( i + '->' + id, 'statusCode[4]:', result.status);
                                                                             if(result.status != 200){
                                                                                 throw  result.statusText;
                                                                             } else {
                                                                                 responseNGPrest = result.data['data']['importacao_guias'];
-                                                                                console.log( i + '-> responseNGPrest', responseNGPrest.length)
+                                                                                console.log( i + '->' + id, ' responseNGPrest', responseNGPrest.length)
                                                                                 if(responseNGPrest.length == 0){
                                                                                     //.. salvar erro "NÃO ENCONTRADO" na tabela de "consolidacao"
+                                                                                    var obj = {
+                                                                                        "type":"insert",
+                                                                                        "args":{
+                                                                                           "table":{
+                                                                                              "name":"consolidacao",
+                                                                                              "schema":"public"
+                                                                                           },
+                                                                                           "objects":[
+                                                                                              {
+                                                                                                 "id_importacao_convenios":  id,
+                                                                                                 "id_importacao_guias":      null,
+                                                                                                 "id_situacao_consolidacao": 3,
+                                                                                                 "id_tipo_erro": 6,
+                                                                                                 "divergencias": "testes.."
+                                                                                              }
+                                                                                           ],
+                                                                                           "returning":[
+                                                                                     
+                                                                                           ]
+                                                                                        }
+                                                                                     }
+                                                                                    var data = JSON.stringify(obj);
+                                                                                    axios.post('https://maratona-zg.herokuapp.com/v1/graphql', data)
+                                                                                        .then(result => {
+                                                                                            //console.log('res:', result);
+                                                                                            //console.log('data:', result.data);
+                                                                                            console.log( i + '->' + id, 'statusCode[5]:', result.status);
+                                                                                            if(result.status != 200){
+                                                                                                throw  result.statusText;
+                                                                                            } else {
+                                                                                            }
+                                                                                        })
+                                                                                        .catch(error => {
+                                                                                            console.error(error)
+                                                                                        })
                                                                                 }
                                                                             }
                                                                         })
@@ -106,6 +142,41 @@ class ProcessaConsolidacao {
                                                                         })
                                                                 } else {
                                                                     //.. salvar referencia na tabela de "consolidacao"
+                                                                    var obj = {
+                                                                        "type":"insert",
+                                                                        "args":{
+                                                                           "table":{
+                                                                              "name":"consolidacao",
+                                                                              "schema":"public"
+                                                                           },
+                                                                           "objects":[
+                                                                              {
+                                                                                 "id_importacao_convenios":0,
+                                                                                 "id_importacao_guias":0,
+                                                                                 "id_situacao_consolidacao":0,
+                                                                                 "id_tipo_erro":0,
+                                                                                 "divergencias":""
+                                                                              }
+                                                                           ],
+                                                                           "returning":[
+                                                                     
+                                                                           ]
+                                                                        }
+                                                                     }
+                                                                    var data = JSON.stringify(obj);
+                                                                    axios.post('https://maratona-zg.herokuapp.com/v1/graphql', data)
+                                                                        .then(result => {
+                                                                            //console.log('res:', result);
+                                                                            //console.log('data:', result.data);
+                                                                            console.log( i + '->' + id, 'statusCode[5]:', result.status);
+                                                                            if(result.status != 200){
+                                                                                throw  result.statusText;
+                                                                            } else {
+                                                                            }
+                                                                        })
+                                                                        .catch(error => {
+                                                                            console.error(error)
+                                                                        })
                                                                 }
                                                             }
                                                         })
