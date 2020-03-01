@@ -1,0 +1,20 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "API ROBÔ CONSOLIDAÇÃO",
+        "description": "Documentação da API do robô de consolidação de importações de registros de glosa.",
+        "license": {
+            "name": "MIT",
+            "url": "https://maratona-zg-time10.herokuapp.com/"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/api/v1"
+        }
+    ],
+    "tags": [],
+    "paths": {},
+    "components": {}
+}

@@ -1,0 +1,33 @@
+{
+  "name": "robo_consolidacao",
+  "version": "1.0.0",
+  "description": "Aplicação responsável pela consolidação, do arquivo de glosa das operadoras de plano de saúde, com os lançamentos realizados nos sistemas das prestadoras de serviços.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wstagf/maratonaZG_Time10.git"
+  },
+  "keywords": [
+    "maratona",
+    "zg",
+    "soluções"
+  ],
+  "author": "Uákiti Pires",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wstagf/maratonaZG_Time10/issues"
+  },
+  "homepage": "https://github.com/wstagf/maratonaZG_Time10#readme",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "express": "^4.17.1",
+    "swagger-ui-express": "^4.1.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  }
+}
