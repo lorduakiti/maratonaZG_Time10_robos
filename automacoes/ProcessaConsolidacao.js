@@ -69,8 +69,8 @@ class ProcessaConsolidacao {
 
                                                     var numeroGuia = arrRegistros[i]['numero_guia']
                                                     var ngPrest = arrRegistros[i]['ng_prest']
-                                                    var responseNumeroGuia = null;
-                                                    var responseNGPrest = null;
+                                                    var arrResponseNumeroGuia = null;
+                                                    var arrResponseNGPrest = null;
                                                     
                                                     // Busca registro equivalente na importação de guias por número da guia.
                                                     var data = {"query":"query MyQuery {\n  importacao_guias(where: {deleted_at: {_is_null: true}, sistema: {_eq: \"" + sistema + "\"}, source: {_eq: \"" + sourceGuia + "\"}, numeroGuia: {_eq: \"" + numeroGuia + "\"}}) {\n    ans\n    cnpj\n    codigo\n    dataAtendimento\n    id\n    id_convenios\n    id_prestadores_servico\n    matricula\n    nome\n    nomeBeneficiario\n    nomeOperadora\n    nomePrestador\n    numeroGuia\n    numeroItem\n    quantidade\n    sistema\n    source\n    updated_at\n    valorTotal\n    valorTotalGuia\n    valorUnitario\n  }\n}\n","variables":null,"operationName":"MyQuery"}
@@ -82,9 +82,9 @@ class ProcessaConsolidacao {
                                                             if(result.status != 200){
                                                                 throw  result.statusText;
                                                             } else {
-                                                                responseNumeroGuia = result.data['data']['importacao_guias'];
-                                                                console.log( i + '->' + id, ' responseNumeroGuia', responseNumeroGuia.length)
-                                                                if(responseNumeroGuia.length == 0){
+                                                                arrResponseNumeroGuia = result.data['data']['importacao_guias'];
+                                                                console.log( i + '->' + id, '  arrResponseNumeroGuia', arrResponseNumeroGuia.length)
+                                                                if(arrResponseNumeroGuia.length == 0){
                                                                     // Busca registro equivalente na importação de guias por número do prestador.
                                                                     var data = {"query":"query MyQuery {\n  importacao_guias(where: {deleted_at: {_is_null: true}, sistema: {_eq: \"" + sistema + "\"}, source: {_eq: \"" + sourceGuia + "\"}, numeroGuia: {_eq: \"" + ngPrest + "\"}}) {\n    ans\n    cnpj\n    codigo\n    dataAtendimento\n    id\n    id_convenios\n    id_prestadores_servico\n    matricula\n    nome\n    nomeBeneficiario\n    nomeOperadora\n    nomePrestador\n    numeroGuia\n    numeroItem\n    quantidade\n    sistema\n    source\n    updated_at\n    valorTotal\n    valorTotalGuia\n    valorUnitario\n  }\n}\n","variables":null,"operationName":"MyQuery"}
                                                                     axios.post('https://maratona-zg.herokuapp.com/v1/graphql', data)
@@ -95,9 +95,9 @@ class ProcessaConsolidacao {
                                                                             if(result.status != 200){
                                                                                 throw  result.statusText;
                                                                             } else {
-                                                                                responseNGPrest = result.data['data']['importacao_guias'];
-                                                                                console.log( i + '->' + id, ' responseNGPrest', responseNGPrest.length)
-                                                                                if(responseNGPrest.length == 0){
+                                                                                arrResponseNGPrest = result.data['data']['importacao_guias'];
+                                                                                console.log( i + '->' + id, '  arrResponseNGPrest', arrResponseNGPrest.length)
+                                                                                if(arrResponseNGPrest.length == 0){
                                                                                     //.. salvar erro "NÃO ENCONTRADO" na tabela de "consolidacao"
                                                                                     var obj = {
                                                                                         "type":"insert",
@@ -121,7 +121,45 @@ class ProcessaConsolidacao {
                                                                                         }
                                                                                      }
                                                                                     var data = JSON.stringify(obj);
-                                                                                    axios.post('https://maratona-zg.herokuapp.com/v1/graphql', data)
+                                                                                    axios.post('https://maratona-zg.herokuapp.com/v1/query', data)
+                                                                                        .then(result => {
+                                                                                            //console.log('res:', result);
+                                                                                            //console.log('data:', result.data);
+                                                                                            console.log( i + '->' + id, 'statusCode[5]:', result.status);
+                                                                                            if(result.status != 200){
+                                                                                                throw  result.statusText;
+                                                                                            } else {
+                                                                                            }
+                                                                                        })
+                                                                                        .catch(error => {
+                                                                                            console.error(error)
+                                                                                        })
+                                                                                } else {
+                                                                                    //.. salvar referencia na tabela de "consolidacao"
+                                                                                    let idGuia = arrResponseNGPrest[0]['id']
+                                                                                    var obj = {
+                                                                                        "type":"insert",
+                                                                                        "args":{
+                                                                                        "table":{
+                                                                                            "name":"consolidacao",
+                                                                                            "schema":"public"
+                                                                                        },
+                                                                                        "objects":[
+                                                                                            {
+                                                                                                "id_importacao_convenios":  id,
+                                                                                                "id_importacao_guias":      idGuia,
+                                                                                                "id_situacao_consolidacao": 4,
+                                                                                                "id_tipo_erro": null,
+                                                                                                "divergencias": ""
+                                                                                            }
+                                                                                        ],
+                                                                                        "returning":[
+                                                                                    
+                                                                                        ]
+                                                                                        }
+                                                                                    }
+                                                                                    var data = JSON.stringify(obj);
+                                                                                    axios.post('https://maratona-zg.herokuapp.com/v1/query', data)
                                                                                         .then(result => {
                                                                                             //console.log('res:', result);
                                                                                             //console.log('data:', result.data);
@@ -142,6 +180,7 @@ class ProcessaConsolidacao {
                                                                         })
                                                                 } else {
                                                                     //.. salvar referencia na tabela de "consolidacao"
+                                                                    let idGuia = arrResponseNumeroGuia[0]['id']
                                                                     var obj = {
                                                                         "type":"insert",
                                                                         "args":{
@@ -151,11 +190,11 @@ class ProcessaConsolidacao {
                                                                            },
                                                                            "objects":[
                                                                               {
-                                                                                 "id_importacao_convenios":0,
-                                                                                 "id_importacao_guias":0,
-                                                                                 "id_situacao_consolidacao":0,
-                                                                                 "id_tipo_erro":0,
-                                                                                 "divergencias":""
+                                                                                 "id_importacao_convenios":  id,
+                                                                                 "id_importacao_guias":      idGuia,
+                                                                                 "id_situacao_consolidacao": 4,
+                                                                                 "id_tipo_erro": null,
+                                                                                 "divergencias": ""
                                                                               }
                                                                            ],
                                                                            "returning":[
@@ -164,7 +203,7 @@ class ProcessaConsolidacao {
                                                                         }
                                                                      }
                                                                     var data = JSON.stringify(obj);
-                                                                    axios.post('https://maratona-zg.herokuapp.com/v1/graphql', data)
+                                                                    axios.post('https://maratona-zg.herokuapp.com/v1/query', data)
                                                                         .then(result => {
                                                                             //console.log('res:', result);
                                                                             //console.log('data:', result.data);
@@ -183,9 +222,6 @@ class ProcessaConsolidacao {
                                                         .catch(error => {
                                                             console.error(error)
                                                         })
-                                                    
-
-                                                    //..
                                                 }
                                                 return res.status(200).json({status: `teste processando start..[${qtdRegistros}][${qtdArrRegistros}]`});
                                             } else {
